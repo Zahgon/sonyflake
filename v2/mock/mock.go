@@ -4,33 +4,26 @@ package mock
 
 import (
 	"errors"
-	"net"
 
 	"github.com/sony/sonyflake/v2/types"
 )
 
 // NewSuccessfulInterfaceAddrs returns a single private IP address.
 func NewSuccessfulInterfaceAddrs() types.InterfaceAddrs {
-	ifat := make([]net.Addr, 0, 1)
-	ifat = append(ifat, &net.IPNet{IP: []byte{192, 168, 0, 1}, Mask: []byte{255, 0, 0, 0}})
-
-	return func() ([]net.Addr, error) {
-		return ifat, nil
-	}
+	_ = "STUB: not implemented"
+	return *new(types.InterfaceAddrs)
 }
 
 var ErrFailedToGetAddresses = errors.New("failed to get addresses")
 
 // NewFailingInterfaceAddrs returns an error.
 func NewFailingInterfaceAddrs() types.InterfaceAddrs {
-	return func() ([]net.Addr, error) {
-		return nil, ErrFailedToGetAddresses
-	}
+	_ = "STUB: not implemented"
+	return *new(types.InterfaceAddrs)
 }
 
 // NewNilInterfaceAddrs returns an empty slice of addresses.
 func NewNilInterfaceAddrs() types.InterfaceAddrs {
-	return func() ([]net.Addr, error) {
-		return []net.Addr{}, nil
-	}
+	_ = "STUB: not implemented"
+	return *new(types.InterfaceAddrs)
 }

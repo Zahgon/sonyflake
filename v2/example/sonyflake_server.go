@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/sony/sonyflake/v2"
@@ -21,26 +20,7 @@ func init() {
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	id, err := sf.NextID()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	body, err := json.Marshal(sf.Decompose(id))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header()["Content-Type"] = []string{"application/json; charset=utf-8"}
-	_, err = w.Write(body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
+func handler(w http.ResponseWriter, r *http.Request) { _ = "STUB: not implemented"; return }
 
 func main() {
 	http.HandleFunc("/", handler)

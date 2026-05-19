@@ -102,213 +102,53 @@ var defaultInterfaceAddrs = net.InterfaceAddrs
 // - Settings.StartTime is ahead of the current time.
 // - Settings.MachineID returns an error.
 // - Settings.CheckMachineID returns false.
-func New(st Settings) (*Sonyflake, error) {
-	if st.BitsSequence < 0 || st.BitsSequence > 30 {
-		return nil, ErrInvalidBitsSequence
-	}
-	if st.BitsMachineID < 0 || st.BitsMachineID > 30 {
-		return nil, ErrInvalidBitsMachineID
-	}
-	if st.TimeUnit < 0 || (st.TimeUnit > 0 && st.TimeUnit < time.Millisecond) {
-		return nil, ErrInvalidTimeUnit
-	}
-	if st.StartTime.After(time.Now()) {
-		return nil, ErrStartTimeAhead
-	}
-
-	sf := new(Sonyflake)
-	sf.mutex = new(sync.Mutex)
-	sf.now = time.Now
-
-	if st.BitsSequence == 0 {
-		sf.bitsSequence = defaultBitsSequence
-	} else {
-		sf.bitsSequence = st.BitsSequence
-	}
-
-	if st.BitsMachineID == 0 {
-		sf.bitsMachine = defaultBitsMachine
-	} else {
-		sf.bitsMachine = st.BitsMachineID
-	}
-
-	sf.bitsTime = 63 - sf.bitsSequence - sf.bitsMachine
-	if sf.bitsTime < 32 {
-		return nil, ErrInvalidBitsTime
-	}
-
-	if st.TimeUnit == 0 {
-		sf.timeUnit = defaultTimeUnit
-	} else {
-		sf.timeUnit = int64(st.TimeUnit)
-	}
-
-	if st.StartTime.IsZero() {
-		sf.startTime = sf.toInternalTime(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC))
-	} else {
-		sf.startTime = sf.toInternalTime(st.StartTime)
-	}
-
-	sf.sequence = 1<<sf.bitsSequence - 1
-
-	var err error
-	if st.MachineID == nil {
-		sf.machine, err = lower16BitPrivateIP(defaultInterfaceAddrs)
-	} else {
-		sf.machine, err = st.MachineID()
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	if sf.machine < 0 || sf.machine >= 1<<sf.bitsMachine {
-		return nil, ErrInvalidMachineID
-	}
-
-	if st.CheckMachineID != nil && !st.CheckMachineID(sf.machine) {
-		return nil, ErrInvalidMachineID
-	}
-
-	return sf, nil
-}
+func New(st Settings) (*Sonyflake, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // NextID generates a next unique ID as int64.
 // After the Sonyflake time overflows, NextID returns an error.
-func (sf *Sonyflake) NextID() (int64, error) {
-	maskSequence := 1<<sf.bitsSequence - 1
+func (sf *Sonyflake) NextID() (int64, error) { _ = "STUB: not implemented"; return 0, nil }
 
-	sf.mutex.Lock()
-	defer sf.mutex.Unlock()
+func (sf *Sonyflake) toInternalTime(t time.Time) int64 { _ = "STUB: not implemented"; return 0 }
 
-	current := sf.currentElapsedTime()
-	if sf.elapsedTime < current {
-		sf.elapsedTime = current
-		sf.sequence = 0
-	} else {
-		sf.sequence = (sf.sequence + 1) & maskSequence
-		if sf.sequence == 0 {
-			sf.elapsedTime++
-			overtime := sf.elapsedTime - current
-			sf.sleep(overtime)
-		}
-	}
+func (sf *Sonyflake) currentElapsedTime() int64 { _ = "STUB: not implemented"; return 0 }
 
-	return sf.toID()
-}
+func (sf *Sonyflake) sleep(overtime int64) { _ = "STUB: not implemented"; return }
 
-func (sf *Sonyflake) toInternalTime(t time.Time) int64 {
-	return t.UTC().UnixNano() / sf.timeUnit
-}
-
-func (sf *Sonyflake) currentElapsedTime() int64 {
-	return sf.toInternalTime(sf.now()) - sf.startTime
-}
-
-func (sf *Sonyflake) sleep(overtime int64) {
-	sleepTime := time.Duration(overtime*sf.timeUnit) -
-		time.Duration(sf.now().UTC().UnixNano()%sf.timeUnit)
-	time.Sleep(sleepTime)
-}
-
-func (sf *Sonyflake) toID() (int64, error) {
-	if sf.elapsedTime >= 1<<sf.bitsTime {
-		return 0, ErrOverTimeLimit
-	}
-
-	return sf.elapsedTime<<(sf.bitsSequence+sf.bitsMachine) |
-		int64(sf.sequence)<<sf.bitsMachine |
-		int64(sf.machine), nil
-}
+func (sf *Sonyflake) toID() (int64, error) { _ = "STUB: not implemented"; return 0, nil }
 
 func privateIPv4(interfaceAddrs types.InterfaceAddrs) (net.IP, error) {
-	as, err := interfaceAddrs()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, a := range as {
-		ipnet, ok := a.(*net.IPNet)
-		if !ok || ipnet.IP.IsLoopback() {
-			continue
-		}
-
-		ip := ipnet.IP.To4()
-		if isPrivateIPv4(ip) {
-			return ip, nil
-		}
-	}
-	return nil, ErrNoPrivateAddress
+	_ = "STUB: not implemented"
+	return *new(net.IP), nil
 }
 
 func isPrivateIPv4(ip net.IP) bool {
+	_ = "STUB: not implemented"
 	// Allow private IP addresses (RFC1918) and link-local addresses (RFC3927)
-	return ip != nil &&
-		(ip[0] == 10 || ip[0] == 172 && (ip[1] >= 16 && ip[1] < 32) || ip[0] == 192 && ip[1] == 168 || ip[0] == 169 && ip[1] == 254)
+	return false
 }
 
 func lower16BitPrivateIP(interfaceAddrs types.InterfaceAddrs) (int, error) {
-	ip, err := privateIPv4(interfaceAddrs)
-	if err != nil {
-		return 0, err
-	}
-
-	return int(ip[2])<<8 + int(ip[3]), nil
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // ToTime returns the time when the given ID was generated.
-func (sf *Sonyflake) ToTime(id int64) time.Time {
-	return time.Unix(0, (sf.startTime+sf.timePart(id))*sf.timeUnit)
-}
+func (sf *Sonyflake) ToTime(id int64) time.Time { _ = "STUB: not implemented"; return *new(time.Time) }
 
 // Compose creates a Sonyflake ID from its components.
 // The time parameter should be the time when the ID was generated.
 // The sequence parameter should be between 0 and 2^BitsSequence-1 (inclusive).
 // The machineID parameter should be between 0 and 2^BitsMachineID-1 (inclusive).
 func (sf *Sonyflake) Compose(t time.Time, sequence, machineID int) (int64, error) {
-	elapsedTime := sf.toInternalTime(t.UTC()) - sf.startTime
-	if elapsedTime < 0 {
-		return 0, ErrStartTimeAhead
-	}
-	if elapsedTime >= 1<<sf.bitsTime {
-		return 0, ErrOverTimeLimit
-	}
-
-	if sequence < 0 || sequence >= 1<<sf.bitsSequence {
-		return 0, ErrInvalidSequence
-	}
-
-	if machineID < 0 || machineID >= 1<<sf.bitsMachine {
-		return 0, ErrInvalidMachineID
-	}
-
-	return elapsedTime<<(sf.bitsSequence+sf.bitsMachine) |
-		int64(sequence)<<sf.bitsMachine |
-		int64(machineID), nil
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // Decompose returns a set of Sonyflake ID parts.
-func (sf *Sonyflake) Decompose(id int64) map[string]int64 {
-	time := sf.timePart(id)
-	sequence := sf.sequencePart(id)
-	machine := sf.machinePart(id)
-	return map[string]int64{
-		"id":       id,
-		"time":     time,
-		"sequence": sequence,
-		"machine":  machine,
-	}
-}
+func (sf *Sonyflake) Decompose(id int64) map[string]int64 { _ = "STUB: not implemented"; return nil }
 
-func (sf *Sonyflake) timePart(id int64) int64 {
-	return id >> (sf.bitsSequence + sf.bitsMachine)
-}
+func (sf *Sonyflake) timePart(id int64) int64 { _ = "STUB: not implemented"; return 0 }
 
-func (sf *Sonyflake) sequencePart(id int64) int64 {
-	maskSequence := int64((1<<sf.bitsSequence - 1) << sf.bitsMachine)
-	return (id & maskSequence) >> sf.bitsMachine
-}
+func (sf *Sonyflake) sequencePart(id int64) int64 { _ = "STUB: not implemented"; return 0 }
 
-func (sf *Sonyflake) machinePart(id int64) int64 {
-	maskMachine := int64(1<<sf.bitsMachine - 1)
-	return id & maskMachine
-}
+func (sf *Sonyflake) machinePart(id int64) int64 { _ = "STUB: not implemented"; return 0 }

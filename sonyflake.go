@@ -67,183 +67,63 @@ var defaultInterfaceAddrs = net.InterfaceAddrs
 // - Settings.StartTime is ahead of the current time.
 // - Settings.MachineID returns an error.
 // - Settings.CheckMachineID returns false.
-func New(st Settings) (*Sonyflake, error) {
-	if st.StartTime.After(time.Now()) {
-		return nil, ErrStartTimeAhead
-	}
-
-	sf := new(Sonyflake)
-	sf.mutex = new(sync.Mutex)
-	sf.sequence = uint16(1<<BitLenSequence - 1)
-
-	if st.StartTime.IsZero() {
-		sf.startTime = toSonyflakeTime(time.Date(2014, 9, 1, 0, 0, 0, 0, time.UTC))
-	} else {
-		sf.startTime = toSonyflakeTime(st.StartTime)
-	}
-
-	var err error
-	if st.MachineID == nil {
-		sf.machineID, err = lower16BitPrivateIP(defaultInterfaceAddrs)
-	} else {
-		sf.machineID, err = st.MachineID()
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	if st.CheckMachineID != nil && !st.CheckMachineID(sf.machineID) {
-		return nil, ErrInvalidMachineID
-	}
-
-	return sf, nil
-}
+func New(st Settings) (*Sonyflake, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // NewSonyflake returns a new Sonyflake configured with the given Settings.
 // NewSonyflake returns nil in the following cases:
 // - Settings.StartTime is ahead of the current time.
 // - Settings.MachineID returns an error.
 // - Settings.CheckMachineID returns false.
-func NewSonyflake(st Settings) *Sonyflake {
-	sf, _ := New(st)
-	return sf
-}
+func NewSonyflake(st Settings) *Sonyflake { _ = "STUB: not implemented"; return nil }
 
 // NextID generates a next unique ID.
 // After the Sonyflake time overflows, NextID returns an error.
-func (sf *Sonyflake) NextID() (uint64, error) {
-	const maskSequence = uint16(1<<BitLenSequence - 1)
+func (sf *Sonyflake) NextID() (uint64, error) { _ = "STUB: not implemented"; return 0, nil }
 
-	sf.mutex.Lock()
-	defer sf.mutex.Unlock()
-
-	current := currentElapsedTime(sf.startTime)
-	if sf.elapsedTime < current {
-		sf.elapsedTime = current
-		sf.sequence = 0
-	} else { // sf.elapsedTime >= current
-		sf.sequence = (sf.sequence + 1) & maskSequence
-		if sf.sequence == 0 {
-			sf.elapsedTime++
-			overtime := sf.elapsedTime - current
-			time.Sleep(sleepTime((overtime)))
-		}
-	}
-
-	return sf.toID()
-}
+// sf.elapsedTime >= current
 
 const sonyflakeTimeUnit = 1e7 // nsec, i.e. 10 msec
 
-func toSonyflakeTime(t time.Time) int64 {
-	return t.UTC().UnixNano() / sonyflakeTimeUnit
-}
+func toSonyflakeTime(t time.Time) int64 { _ = "STUB: not implemented"; return 0 }
 
-func currentElapsedTime(startTime int64) int64 {
-	return toSonyflakeTime(time.Now()) - startTime
-}
+func currentElapsedTime(startTime int64) int64 { _ = "STUB: not implemented"; return 0 }
 
-func sleepTime(overtime int64) time.Duration {
-	return time.Duration(overtime*sonyflakeTimeUnit) -
-		time.Duration(time.Now().UTC().UnixNano()%sonyflakeTimeUnit)
-}
+func sleepTime(overtime int64) time.Duration { _ = "STUB: not implemented"; return *new(time.Duration) }
 
-func (sf *Sonyflake) toID() (uint64, error) {
-	if sf.elapsedTime >= 1<<BitLenTime {
-		return 0, ErrOverTimeLimit
-	}
-
-	return uint64(sf.elapsedTime)<<(BitLenSequence+BitLenMachineID) |
-		uint64(sf.sequence)<<BitLenMachineID |
-		uint64(sf.machineID), nil
-}
+func (sf *Sonyflake) toID() (uint64, error) { _ = "STUB: not implemented"; return 0, nil }
 
 func privateIPv4(interfaceAddrs types.InterfaceAddrs) (net.IP, error) {
-	as, err := interfaceAddrs()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, a := range as {
-		ipnet, ok := a.(*net.IPNet)
-		if !ok || ipnet.IP.IsLoopback() {
-			continue
-		}
-
-		ip := ipnet.IP.To4()
-		if isPrivateIPv4(ip) {
-			return ip, nil
-		}
-	}
-	return nil, ErrNoPrivateAddress
+	_ = "STUB: not implemented"
+	return *new(net.IP), nil
 }
 
 func isPrivateIPv4(ip net.IP) bool {
+	_ = "STUB: not implemented"
 	// Allow private IP addresses (RFC1918) and link-local addresses (RFC3927)
-	return ip != nil &&
-		(ip[0] == 10 || ip[0] == 172 && (ip[1] >= 16 && ip[1] < 32) || ip[0] == 192 && ip[1] == 168 || ip[0] == 169 && ip[1] == 254)
+	return false
 }
 
 func lower16BitPrivateIP(interfaceAddrs types.InterfaceAddrs) (uint16, error) {
-	ip, err := privateIPv4(interfaceAddrs)
-	if err != nil {
-		return 0, err
-	}
-
-	return uint16(ip[2])<<8 + uint16(ip[3]), nil
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // ElapsedTime returns the elapsed time when the given Sonyflake ID was generated.
-func ElapsedTime(id uint64) time.Duration {
-	return time.Duration(elapsedTime(id) * sonyflakeTimeUnit)
-}
+func ElapsedTime(id uint64) time.Duration { _ = "STUB: not implemented"; return *new(time.Duration) }
 
-func elapsedTime(id uint64) uint64 {
-	return id >> (BitLenSequence + BitLenMachineID)
-}
+func elapsedTime(id uint64) uint64 { _ = "STUB: not implemented"; return 0 }
 
 // SequenceNumber returns the sequence number of a Sonyflake ID.
-func SequenceNumber(id uint64) uint64 {
-	const maskSequence = uint64((1<<BitLenSequence - 1) << BitLenMachineID)
-	return id & maskSequence >> BitLenMachineID
-}
+func SequenceNumber(id uint64) uint64 { _ = "STUB: not implemented"; return 0 }
 
 // MachineID returns the machine ID of a Sonyflake ID.
-func MachineID(id uint64) uint64 {
-	const maskMachineID = uint64(1<<BitLenMachineID - 1)
-	return id & maskMachineID
-}
+func MachineID(id uint64) uint64 { _ = "STUB: not implemented"; return 0 }
 
 // Compose creates a Sonyflake ID from its parts.
 func Compose(sf *Sonyflake, t time.Time, sequence uint16, machineID uint16) (uint64, error) {
-	elapsedTime := toSonyflakeTime(t.UTC()) - sf.startTime
-	if elapsedTime < 0 {
-		return 0, ErrStartTimeAhead
-	}
-	if elapsedTime >= 1<<BitLenTime {
-		return 0, ErrOverTimeLimit
-	}
-
-	if sequence >= 1<<BitLenSequence {
-		return 0, ErrInvalidSequence
-	}
-
-	return uint64(elapsedTime)<<(BitLenSequence+BitLenMachineID) |
-		uint64(sequence)<<BitLenMachineID |
-		uint64(machineID), nil
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // Decompose returns a set of Sonyflake ID parts.
-func Decompose(id uint64) map[string]uint64 {
-	msb := id >> 63
-	time := elapsedTime(id)
-	sequence := SequenceNumber(id)
-	machineID := MachineID(id)
-	return map[string]uint64{
-		"id":         id,
-		"msb":        msb,
-		"time":       time,
-		"sequence":   sequence,
-		"machine-id": machineID,
-	}
-}
+func Decompose(id uint64) map[string]uint64 { _ = "STUB: not implemented"; return nil }
